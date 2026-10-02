@@ -1,0 +1,99 @@
+📂backend
+┣ 📂logs
+┃ ┣ 📜combined.log
+┃ ┣ 📜error.log
+┃ ┣ 📜exceptions.log
+┃ ┗ 📜rejections.log
+┣ 📂src
+┃ ┣ 📂config
+┃ ┃ ┣ 📜cloudinary.js
+┃ ┃ ┣ 📜database.js
+┃ ┃ ┣ 📜database1.js
+┃ ┃ ┣ 📜env.js
+┃ ┃ ┗ 📜firebase.js
+┃ ┣ 📂constants
+┃ ┃ ┣ 📜index.js
+┃ ┃ ┗ 📜messages.js
+┃ ┣ 📂controllers
+┃ ┃ ┣ 📜admin.controller.js
+┃ ┃ ┣ 📜applicant.controller.js
+┃ ┃ ┣ 📜application.controller.js
+┃ ┃ ┣ 📜auth.controller.js
+┃ ┃ ┣ 📜chat.controller.js
+┃ ┃ ┣ 📜job.controller.js
+┃ ┃ ┣ 📜notification.controller.js
+┃ ┃ ┗ 📜organization.controller.js
+┃ ┣ 📂middleware
+┃ ┃ ┣ 📜auth.middleware.js
+┃ ┃ ┣ 📜error.middleware.js
+┃ ┃ ┣ 📜rateLimit.middleware.js
+┃ ┃ ┣ 📜role.middleware.js
+┃ ┃ ┣ 📜upload.middleware.js
+┃ ┃ ┗ 📜validate.middleware.js
+┃ ┣ 📂models
+┃ ┃ ┣ 📜Admin.model.js
+┃ ┃ ┣ 📜Applicant.model.js
+┃ ┃ ┣ 📜Application.model.js
+┃ ┃ ┣ 📜Category.model.js
+┃ ┃ ┣ 📜Complaint.model.js
+┃ ┃ ┣ 📜Conversation.model.js
+┃ ┃ ┣ 📜Job.model.js
+┃ ┃ ┣ 📜Location.model.js
+┃ ┃ ┣ 📜Message.model.js
+┃ ┃ ┣ 📜Notification.model.js
+┃ ┃ ┣ 📜Organization.model.js
+┃ ┃ ┗ 📜Role.model.js
+┃ ┣ 📂routes
+┃ ┃ ┣ 📜admin.routes.js
+┃ ┃ ┣ 📜applicant.routes.js
+┃ ┃ ┣ 📜application.routes.js
+┃ ┃ ┣ 📜auth.routes.js
+┃ ┃ ┣ 📜chat.routes.js
+┃ ┃ ┣ 📜index.js
+┃ ┃ ┣ 📜job.routes.js
+┃ ┃ ┣ 📜notification.routes.js
+┃ ┃ ┗ 📜organization.routes.js
+┃ ┣ 📂scripts
+┃ ┃ ┣ 📂seeders
+┃ ┃ ┃ ┣ 📜admin.seeder.js
+┃ ┃ ┃ ┣ 📜applicant.seeder.js
+┃ ┃ ┃ ┣ 📜interaction.seeder.js
+┃ ┃ ┃ ┣ 📜job.seeder.js
+┃ ┃ ┃ ┣ 📜lookup.seeder.js
+┃ ┃ ┃ ┗ 📜organization.seeder.js
+┃ ┃ ┣ 📜admin.seeder.js
+┃ ┃ ┣ 📜seed-working.js
+┃ ┃ ┗ 📜seed.js
+┃ ┣ 📂services
+┃ ┃ ┣ 📜email.service.js
+┃ ┃ ┣ 📜push.service.js
+┃ ┃ ┣ 📜sms.service.js
+┃ ┃ ┣ 📜token.service.js
+┃ ┃ ┗ 📜upload.service.js
+┃ ┣ 📂sockets
+┃ ┃ ┗ 📜chat.socket.js
+┃ ┣ 📂utils
+┃ ┃ ┣ 📜ApiError.js
+┃ ┃ ┣ 📜ApiResponse.js
+┃ ┃ ┣ 📜asyncHandler.js
+┃ ┃ ┣ 📜errorResponse.js
+┃ ┃ ┣ 📜logger-deepseek.js
+┃ ┃ ┣ 📜logger.js
+┃ ┃ ┣ 📜otp.js
+┃ ┃ ┗ 📜pagination.js
+┃ ┣ 📂validations
+┃ ┃ ┣ 📜admin.validation.js
+┃ ┃ ┣ 📜applicant.validation.js
+┃ ┃ ┣ 📜application.validation.js
+┃ ┃ ┣ 📜auth.validation.js
+┃ ┃ ┣ 📜job.validation.js
+┃ ┃ ┗ 📜organization.validation.js
+┃ ┣ 📜app-working.js
+┃ ┗ 📜app.js
+┣ 📜.env
+┣ 📜.env_example
+┣ 📜.gitignore
+┣ 📜Backend.txt
+┣ 📜package.json
+┣ 📜server-working.js
+┗ 📜server.js
