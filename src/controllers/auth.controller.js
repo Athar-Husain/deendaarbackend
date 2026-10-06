@@ -13,7 +13,7 @@ import { sendOtpEmail } from "../services/email.service.js";
 import { generateOtp, otpExpiry } from "../utils/otp.js";
 import { buildAuthState } from "../utils/authState.js";
 
-import { ACCOUNT_STATUS } from "../constants/index.js";
+import { ACCOUNT_STATUS, ROLES } from "../constants/index.js";
 import { AUTH } from "../constants/messages.js";
 import { demoMode } from "../config/env.js";
 
@@ -21,7 +21,7 @@ import { demoMode } from "../config/env.js";
 /* CONSTANTS                                                          */
 /* ------------------------------------------------------------------ */
 
-const ROLES = { APPLICANT: "applicant", ORGANIZATION: "organization" };
+// const ROLES = { APPLICANT: "applicant", ORGANIZATION: "organization" };
 const OTP_EXPIRY_MINUTES = 10;
 
 /* ------------------------------------------------------------------ */
@@ -171,7 +171,7 @@ export const applicantSignup = asyncHandler(async (req, res) => {
     pincode,
     fullAddress,
   } = req.body;
-  
+
   const trimmedCountry = trimString(country);
 
   const normalizedEmail = normalizeEmail(email);
@@ -691,7 +691,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
 /* REFRESH TOKEN                                                      */
 /* ------------------------------------------------------------------ */
 
-export const refresh = asyncHandler(async (req, res) => {
+export const refreshold = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
@@ -733,6 +733,107 @@ export const refresh = asyncHandler(async (req, res) => {
   return res.json(new ApiResponse(200, tokens, "Token refreshed."));
 });
 
+export const refresh = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    throwAuthError(
+      401,
+      "REFRESH_TOKEN_REQUIRED",
+      "Refresh token is required.",
+    );
+  }
+
+  let decoded;
+
+  try {
+    decoded = verifyRefreshToken(refreshToken);
+  } catch (err) {
+    logger.warn("Refresh token verification failed", {
+      error: err.message,
+    });
+
+    throwAuthError(
+      401,
+      "TOKEN_EXPIRED",
+      "Refresh token is invalid or expired.",
+    );
+  }
+
+  // Support applicant, organization and admin refresh tokens.
+  if (
+    !decoded?.id ||
+    ![
+      ROLES.APPLICANT,
+      ROLES.ORGANIZATION,
+      ROLES.ADMIN,
+    ].includes(decoded.role)
+  ) {
+    throwAuthError(
+      401,
+      "TOKEN_INVALID",
+      "Invalid refresh token.",
+    );
+  }
+
+  // Select the correct model based on the role in the refresh token.
+  let Model;
+
+  switch (decoded.role) {
+    case ROLES.APPLICANT:
+      Model = Applicant;
+      break;
+
+    case ROLES.ORGANIZATION:
+      Model = Organization;
+      break;
+
+    case ROLES.ADMIN:
+      Model = Admin;
+      break;
+
+    default:
+      throwAuthError(
+        401,
+        "TOKEN_INVALID",
+        "Invalid token role.",
+      );
+  }
+
+  const user = await Model.findById(decoded.id);
+
+  if (!user) {
+    throwAuthError(
+      401,
+      "TOKEN_INVALID",
+      "User not found.",
+    );
+  }
+
+  // Admins are not restricted by applicant/organization approval.
+  let restricted = false;
+
+  if (decoded.role !== ROLES.ADMIN) {
+    const state = buildAuthState(user, decoded.role);
+    restricted = state.restricted;
+  }
+
+  const tokens = issueTokens({
+    id: user._id.toString(),
+    role: decoded.role,
+    restricted,
+  });
+
+  return res.json(
+    new ApiResponse(
+      200,
+      tokens,
+      "Token refreshed.",
+    ),
+  );
+});
+
+
 /* ------------------------------------------------------------------ */
 /* CURRENT USER                                                       */
 /* ------------------------------------------------------------------ */
@@ -764,6 +865,16 @@ export const me = asyncHandler(async (req, res) => {
   if (!req.user)
     throwAuthError(401, "UNAUTHORIZED", "Authentication required.");
 
+  if (req.role === ROLES.ADMIN) {
+    res.json(
+      new ApiResponse(
+        200,
+        { user: req.user.toSafeJSON(), role: req.role },
+        "Profile fetched",
+      ),
+    );
+  }
+
   const state = buildAuthState(req.user, req.role);
 
   return res.json(
@@ -776,7 +887,6 @@ export const me = asyncHandler(async (req, res) => {
         capabilities: state.capabilities,
         nextStep: state.nextStep,
         profileComplete: state.profileComplete,
-        demoMode: state.demoMode, // 👈 comes from buildAuthState now
       },
       "Profile fetched.",
     ),

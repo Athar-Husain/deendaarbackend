@@ -67,6 +67,7 @@ export const requireFullAccess = (req, _res, next) => {
   }
   return next();
 };
+
 export const requireApproved = (req, _res, next) => {
   if (req.role === "admin") return next();
   
