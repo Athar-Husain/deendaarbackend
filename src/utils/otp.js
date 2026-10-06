@@ -1,3 +1,4 @@
+// backend/src/utils/otp.js
 import crypto from "crypto";
 
 function generateOtp(length = 6) {

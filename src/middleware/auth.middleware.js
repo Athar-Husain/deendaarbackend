@@ -1,43 +1,41 @@
+// backend/src/middleware/auth.middleware.js
+
 import ApiError from "../utils/ApiError.js";
 import { verifyAccessToken } from "../services/token.service.js";
-import { AUTH } from "../constants/messages.js";
 import Applicant from "../models/Applicant.model.js";
 import Organization from "../models/Organization.model.js";
 import Admin from "../models/Admin.model.js";
 
-const MODEL_MAP = {
+const MODELS = {
   applicant: Applicant,
   organization: Organization,
   admin: Admin,
 };
 
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, _res, next) => {
   try {
     const header = req.headers.authorization || "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;
 
     if (!token) {
-      throw new ApiError(401, AUTH.UNAUTHORIZED);
+      return next(new ApiError(401, "Authentication required."));
     }
 
     let decoded;
-
     try {
       decoded = verifyAccessToken(token);
-    } catch (err) {
-      throw new ApiError(401, AUTH.TOKEN_EXPIRED);
+    } catch {
+      return next(new ApiError(401, "Access token is invalid or expired."));
     }
 
-    const Model = MODEL_MAP[decoded.role];
-
+    const Model = MODELS[decoded.role];
     if (!Model) {
-      throw new ApiError(401, AUTH.UNAUTHORIZED);
+      return next(new ApiError(401, "Invalid token role."));
     }
 
     const user = await Model.findById(decoded.id);
-
     if (!user) {
-      throw new ApiError(401, AUTH.UNAUTHORIZED);
+      return next(new ApiError(401, "User no longer exists."));
     }
 
     if (user.blocked || user.suspended) {
@@ -46,21 +44,51 @@ const authenticate = async (req, res, next) => {
 
     req.user = user;
     req.role = decoded.role;
+    req.restricted = Boolean(decoded.restricted);
 
-    next();
+    return next();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
-const requireApproved = (req, res, next) => {
+/**
+ * Guard: only fully-approved accounts can access.
+ */
+
+export const requireFullAccess = (req, _res, next) => {
+  if (req.restricted || req.user?.status !== "approved") {
+    return next(
+      new ApiError(
+        403,
+        "Upload your documents and wait for admin approval to unlock this feature.",
+      ),
+    );
+  }
+  return next();
+};
+export const requireApproved = (req, _res, next) => {
   if (req.role === "admin") return next();
-
-  if (req.user.status !== "approved") {
-    return next(new ApiError(403, AUTH.ACCOUNT_PENDING));
+  
+  if (req.restricted || req.user?.status !== "approved") {
+    return next(
+      new ApiError(
+        403,
+        "Upload your documents and wait for admin approval to unlock this feature.",
+      ),
+    );
   }
-
-  next();
+  return next();
 };
 
-export { authenticate, requireApproved };
+/**
+ * Guard: role-based.
+ */
+export const requireRole =
+  (...roles) =>
+  (req, _res, next) => {
+    if (!roles.includes(req.role)) {
+      return next(new ApiError(403, "Forbidden."));
+    }
+    return next();
+  };

@@ -21,8 +21,24 @@ required.forEach((key) => {
 
 const config = {
   nodeEnv: process.env.NODE_ENV || "development",
+  /*
+  |--------------------------------------------------------------------------
+  | Environment
+  |--------------------------------------------------------------------------
+  */
+
+  // isDevelopment: nodeEnv === "development",
+  // isProduction: nodeEnv === "production",
 
   port: Number.parseInt(process.env.PORT, 10) || 5000,
+
+  /**
+   * Base URL used to build absolute URLs for mock uploads.
+   * In production, set this to your real domain.
+   */
+  appBaseUrl:
+    process.env.APP_BASE_URL ||
+    `http://localhost:${Number.parseInt(process.env.PORT, 10) || 5000}`,
 
   mongoUri: process.env.MONGODB_URI,
 
@@ -50,7 +66,18 @@ const config = {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET,
+    folder: process.env.CLOUDINARY_FOLDER || "job-portal",
   },
+
+  /**
+   * Upload provider:
+   *   "mock"       → saves files to backend/uploads/
+   *   "cloudinary" → streams to Cloudinary
+   */
+  uploadProvider:
+    String(process.env.UPLOAD_PROVIDER || "mock").toLowerCase() === "cloudinary"
+      ? "cloudinary"
+      : "mock",
 
   firebase: {
     projectId: process.env.FIREBASE_PROJECT_ID,
@@ -64,20 +91,39 @@ const config = {
     email: process.env.ADMIN_EMAIL || "admin@deendaar.com",
     password: process.env.ADMIN_PASSWORD || "Admin@12345",
   },
+
+  /**
+   * Demo mode.
+   *
+   * Turn OFF for production:
+   * DEMO_MODE=false
+   */
+  demoMode: String(process.env.DEMO_MODE || "false").toLowerCase() === "true",
 };
 
-// 🌟 Named exports for individual config pieces
+/* ------------------------------------------------------------------ */
+/* NAMED EXPORTS                                                      */
+/* ------------------------------------------------------------------ */
+
 export const {
   nodeEnv,
+  isDevelopment,
+  isProduction,
   port,
+  appBaseUrl,
   mongoUri,
   jwt,
   corsOrigins,
   smtp,
   cloudinary,
+  uploadProvider,
   firebase,
   adminSeed,
+  demoMode,
 } = config;
 
-// Default export remains intact for backwards compatibility
+/* ------------------------------------------------------------------ */
+/* DEFAULT EXPORT                                                     */
+/* ------------------------------------------------------------------ */
+
 export default config;

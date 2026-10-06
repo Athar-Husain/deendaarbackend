@@ -31,6 +31,7 @@ export const APPLICATION_STATUS = {
 
 export const JOB_STATUS = {
   PENDING: "pending",
+  ACTIVE: "active",
   OPEN: "open",
   CLOSED: "closed",
   REJECTED: "rejected",
