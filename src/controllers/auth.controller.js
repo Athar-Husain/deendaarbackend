@@ -15,7 +15,6 @@ import { buildAuthState } from "../utils/authState.js";
 
 import { ACCOUNT_STATUS, ROLES } from "../constants/index.js";
 import { AUTH } from "../constants/messages.js";
-import { demoMode } from "../config/env.js";
 
 /* ------------------------------------------------------------------ */
 /* CONSTANTS                                                          */
@@ -124,8 +123,6 @@ const sendLoginResponse = (res, user, role) => {
         nextStep: state.nextStep,
         profileComplete: state.profileComplete,
         status: user.status,
-        // 👇 exposed so mobile can render "Skip (Demo)" button
-        demoMode: demoMode,
         ...tokens,
       },
       state.approved
@@ -737,11 +734,7 @@ export const refresh = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
-    throwAuthError(
-      401,
-      "REFRESH_TOKEN_REQUIRED",
-      "Refresh token is required.",
-    );
+    throwAuthError(401, "REFRESH_TOKEN_REQUIRED", "Refresh token is required.");
   }
 
   let decoded;
@@ -763,17 +756,9 @@ export const refresh = asyncHandler(async (req, res) => {
   // Support applicant, organization and admin refresh tokens.
   if (
     !decoded?.id ||
-    ![
-      ROLES.APPLICANT,
-      ROLES.ORGANIZATION,
-      ROLES.ADMIN,
-    ].includes(decoded.role)
+    ![ROLES.APPLICANT, ROLES.ORGANIZATION, ROLES.ADMIN].includes(decoded.role)
   ) {
-    throwAuthError(
-      401,
-      "TOKEN_INVALID",
-      "Invalid refresh token.",
-    );
+    throwAuthError(401, "TOKEN_INVALID", "Invalid refresh token.");
   }
 
   // Select the correct model based on the role in the refresh token.
@@ -793,21 +778,13 @@ export const refresh = asyncHandler(async (req, res) => {
       break;
 
     default:
-      throwAuthError(
-        401,
-        "TOKEN_INVALID",
-        "Invalid token role.",
-      );
+      throwAuthError(401, "TOKEN_INVALID", "Invalid token role.");
   }
 
   const user = await Model.findById(decoded.id);
 
   if (!user) {
-    throwAuthError(
-      401,
-      "TOKEN_INVALID",
-      "User not found.",
-    );
+    throwAuthError(401, "TOKEN_INVALID", "User not found.");
   }
 
   // Admins are not restricted by applicant/organization approval.
@@ -824,15 +801,8 @@ export const refresh = asyncHandler(async (req, res) => {
     restricted,
   });
 
-  return res.json(
-    new ApiResponse(
-      200,
-      tokens,
-      "Token refreshed.",
-    ),
-  );
+  return res.json(new ApiResponse(200, tokens, "Token refreshed."));
 });
-
 
 /* ------------------------------------------------------------------ */
 /* CURRENT USER                                                       */
@@ -854,7 +824,6 @@ export const meold = asyncHandler(async (req, res) => {
         capabilities: state.capabilities,
         nextStep: state.nextStep,
         profileComplete: state.profileComplete,
-        demoMode: demoMode,
       },
       "Profile fetched.",
     ),

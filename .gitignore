@@ -6,3 +6,4 @@ uploads/
 .DS_Store
 coverage/
 dist/
+atlas-credentials.env

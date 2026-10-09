@@ -1,3 +1,4 @@
+// backend/src/models/Job.model.js
 import mongoose from "mongoose";
 import { JOB_ROLES, JOB_STATUS } from "../constants/index.js";
 

@@ -28,10 +28,44 @@ export const updateProfile = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, req.user.toSafeJSON(), "Profile updated"));
 });
 
-export const updateAddress = asyncHandler(async (req, res) => {
+export const updateAddressold = asyncHandler(async (req, res) => {
   req.user.address = { ...req.user.address.toObject(), ...req.body };
   await req.user.save();
   res.json(new ApiResponse(200, req.user.address, "Address updated"));
+});
+
+export const updateAddress = asyncHandler(async (req, res) => {
+  const { country, state, district, city, pincode, fullAddress } = req.body;
+
+  if (country !== undefined) {
+    req.user.address.country = String(country).trim();
+  }
+
+  if (state !== undefined) {
+    req.user.address.state = String(state).trim();
+  }
+
+  if (district !== undefined) {
+    req.user.address.district = String(district).trim();
+  }
+
+  if (city !== undefined) {
+    req.user.address.city = String(city).trim();
+  }
+
+  if (pincode !== undefined) {
+    req.user.address.pincode = String(pincode).trim();
+  }
+
+  if (fullAddress !== undefined) {
+    req.user.address.fullAddress = String(fullAddress).trim();
+  }
+
+  await req.user.save();
+
+  res.json(
+    new ApiResponse(200, req.user.address, "Address updated successfully"),
+  );
 });
 
 export const updateQualifications = asyncHandler(async (req, res) => {

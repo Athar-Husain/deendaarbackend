@@ -1,78 +1,63 @@
-import "dotenv/config";
+// backend/server.js
+import dns from "dns";
 import http from "http";
-import mongoose from "mongoose";
+import { Server } from "socket.io";
 
-import app from "./src/app.js";
-import connectDB from "./src/config/database.js";
+import { createApp } from "./src/app.js";
+import { connectDatabase } from "./src/config/database1.js";
+import { port, corsOrigins, nodeEnv } from "./src/config/env.js";
+import { initChatSocket } from "./src/sockets/chat.socket.js";
+import logger from "./src/utils/logger.js";
 
-const PORT = process.env.PORT || 5000;
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
-// Create HTTP server
-const server = http.createServer(app);
+const bootstrap = async () => {
+  await connectDatabase();
 
-// Start server
-const startServer = async () => {
-  try {
-    await connectDB();
+  const app = createApp();
+  const server = http.createServer(app);
 
-    server.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  const io = new Server(server, {
+    cors: {
+      origin: corsOrigins.length ? corsOrigins : "*",
+      credentials: true,
+    },
+    path: "/socket.io",
+  });
+
+  initChatSocket(io);
+  app.set("io", io);
+
+  server.listen(port, () => {
+    logger.info(`DEENDAAR API running on port ${port} (${nodeEnv})`);
+  });
+
+  const shutdown = (signal) => {
+    logger.info(`${signal} received. Shutting down...`);
+    io.close();
+
+    server.close(() => {
+      logger.info("HTTP server closed");
+      process.exit(0);
     });
-  } catch (err) {
-    console.error("Failed to start server:", err);
-    process.exit(1);
-  }
-};
 
-startServer();
+    setTimeout(() => process.exit(1), 10000).unref();
+  };
 
-// Graceful shutdown
-const gracefulShutdown = async (signal) => {
-  console.log(`Received ${signal}. Shutting down gracefully...`);
+  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
 
-  server.close(async (err) => {
-    if (err) {
-      console.error("Error closing HTTP server:", err);
-    } else {
-      console.log("HTTP server closed");
-    }
+  process.on("unhandledRejection", (reason) => {
+    logger.error(`Unhandled Rejection: ${reason}`);
+  });
 
-    try {
-      await mongoose.connection.close(false);
-      console.log("MongoDB disconnected");
-    } catch (err) {
-      console.error("Error disconnecting MongoDB:", err);
-    }
-
-    process.exit(0);
+  process.on("uncaughtException", (err) => {
+    logger.error(`Uncaught Exception: ${err.message}\n${err.stack}`);
+    shutdown("uncaughtException");
   });
 };
 
-// Process handlers
-process.on("unhandledRejection", async (err) => {
-  console.error("Unhandled Rejection:", err);
-
-  try {
-    await mongoose.connection.close(false);
-  } catch (closeErr) {
-    console.error("Error disconnecting MongoDB:", closeErr);
-  }
-
+bootstrap().catch((err) => {
+  logger.error(`Bootstrap failed: ${err.message}`);
   process.exit(1);
 });
-
-process.on("uncaughtException", async (err) => {
-  console.error("Uncaught Exception:", err);
-
-  try {
-    await mongoose.connection.close(false);
-  } catch (closeErr) {
-    console.error("Error disconnecting MongoDB:", closeErr);
-  }
-
-  process.exit(1);
-});
-
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));

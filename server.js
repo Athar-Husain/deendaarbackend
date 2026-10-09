@@ -1,3 +1,4 @@
+// backend/server.js
 import http from "http";
 import { Server } from "socket.io";
 

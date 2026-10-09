@@ -1,6 +1,6 @@
 // backend/src/utils/authState.js
 
-import { demoMode } from "../config/env.js";
+// import { demoMode } from "../config/env.js";
 import { ACCOUNT_STATUS } from "../constants/index.js";
 
 /**
@@ -35,6 +35,5 @@ export const buildAuthState = (user, role) => {
     nextStep,
     profileComplete,
     approved,
-    demoMode,
   };
 };

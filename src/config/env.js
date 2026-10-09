@@ -19,6 +19,8 @@ required.forEach((key) => {
   }
 });
 
+// console.log("process.env.MONGODB_URI,", process.env.MONGODB_URI);
+
 const config = {
   nodeEnv: process.env.NODE_ENV || "development",
   /*
@@ -91,14 +93,6 @@ const config = {
     email: process.env.ADMIN_EMAIL || "admin@deendaar.com",
     password: process.env.ADMIN_PASSWORD || "Admin@12345",
   },
-
-  /**
-   * Demo mode.
-   *
-   * Turn OFF for production:
-   * DEMO_MODE=false
-   */
-  demoMode: String(process.env.DEMO_MODE || "false").toLowerCase() === "true",
 };
 
 /* ------------------------------------------------------------------ */
@@ -107,8 +101,6 @@ const config = {
 
 export const {
   nodeEnv,
-  isDevelopment,
-  isProduction,
   port,
   appBaseUrl,
   mongoUri,
@@ -119,7 +111,6 @@ export const {
   uploadProvider,
   firebase,
   adminSeed,
-  demoMode,
 } = config;
 
 /* ------------------------------------------------------------------ */
